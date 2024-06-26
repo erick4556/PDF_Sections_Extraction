@@ -1,0 +1,26 @@
+Papers1
+
+2024-06-19 19:31:32,222:ERROR:No se encontró una coincidencia para el archivo: paper_100609369660e602b217d47.23054554.xml
+2024-06-19 19:31:32,235:ERROR:No se encontró una coincidencia para el archivo: paper_147937117865f984c26d5de9.42778313.xml
+2024-06-19 19:31:32,355:ERROR:No se encontró una coincidencia para el archivo: paper_129872718965f964efaecf54.66056626.xml
+2024-06-19 19:31:32,377:ERROR:No se encontró una coincidencia para el archivo: paper_180472695857f6346bebc762.34602416.xml
+2024-06-19 19:31:32,555:ERROR:No se encontró una coincidencia para el archivo: paper_805825197660e8b926345a1.82435127.xml
+2024-06-19 19:31:32,638:ERROR:No se encontró una coincidencia para el archivo: paper_23556872065f9a98859cac5.22694589.xml
+2024-06-19 19:31:32,820:ERROR:No se encontró una coincidencia para el archivo: paper_170093580065cb550fe82ba4.63335512.xml
+2024-06-19 19:31:33,060:ERROR:No se encontró una coincidencia para el archivo: paper_115932045157f638f8a12209.53127349.xml
+2024-06-19 19:31:33,064:ERROR:No se encontró una coincidencia para el archivo: paper_98275180165f9a9a25a6de3.74832317.xml
+
+Papers2
+2024-06-19 19:35:25,812:ERROR:No se encontró una coincidencia para el archivo: 10.1016@j.cattod.2010.08.026.xml
+
+Papers3
+
+2024-06-19 19:36:35,682:ERROR:No se encontró una coincidencia para el archivo: paper_106813458362457be4427c21.70585925.xml
+2024-06-19 19:36:36,021:ERROR:No se encontró una coincidencia para el archivo: paper_2039161364660a6449d667d4.83129649.xml
+
+Papers4
+
+2024-06-19 19:50:46,067:ERROR:No se encontró una coincidencia para el archivo: paper_1584557f218341420b055183906.xml
+2024-06-19 19:50:46,410:ERROR:No se encontró una coincidencia para el archivo: paper_2303047660ebf237a0b99.68573794.xml
+
+ 
