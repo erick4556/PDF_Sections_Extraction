@@ -7,7 +7,7 @@ import logging
 
 # Configurar el registro (logging)
 log_file_path = 'process_errors.log'
-logging.basicConfig(filename=log_file_path, level=logging.ERROR, 
+logging.basicConfig(filename=log_file_path, level=logging.ERROR,
                     format='%(asctime)s:%(levelname)s:%(message)s')
 
 
@@ -55,7 +55,7 @@ def extract_sections_from_xml(file_path):
     # Extraction of sections
     abstract_content = extract_content_by_tag("abstract")
     experimental_content = extract_content_by_keywords(
-        ["Experimental", "Experimental studies", "Experiments", "Methods"], "Results and discussion")
+        ["Experimental", "Experimental studies", "Experiments", "Experimental methods", "Methods"], "Results and discussion")
     results_discussion_content = extract_content_by_keywords(
         ["Results and discussion", "Result and discussion", "Results"], "Conclusion")
     supporting_information_content = extract_content_by_keywords(
@@ -77,16 +77,18 @@ def extract_sections_from_xml(file_path):
     return sections, title
 
 
-def process_files_in_folder(xml_folder_path, output_folder_path, csv_path):
+def process_files_in_folder(xml_folder_path, complete_output_folder, incomplete_output_folder, csv_path):
     # Read the CSV file to get the mapping of titles to IDs
     df = pd.read_csv(csv_path)
 
     # Add .xml extension to filenames in the DataFrame
     df['filename'] = df['filename'].str.strip() + '.xml'
 
-    # Ensure the output folder exists
-    if not os.path.exists(output_folder_path):
-        os.makedirs(output_folder_path)
+    # Ensure the output folders exist
+    if not os.path.exists(complete_output_folder):
+        os.makedirs(complete_output_folder)
+    if not os.path.exists(incomplete_output_folder):
+        os.makedirs(incomplete_output_folder)
 
     # Get all XML files in the folder
     xml_files = glob.glob(os.path.join(xml_folder_path, '*.xml'))
@@ -101,12 +103,18 @@ def process_files_in_folder(xml_folder_path, output_folder_path, csv_path):
 
             # Find the matching row in the CSV file by filename
             matching_row = df[df['filename'] == filename]
-            
+
             if not matching_row.empty:
                 paper_id = matching_row['ID'].values[0]
                 json_file_name = f'paper_{paper_id}.json'
-                output_json_path = os.path.join(
-                    output_folder_path, json_file_name)
+
+                # Check if all sections have content
+                all_sections_have_content = all(section['content'] for section in sections)
+
+                if all_sections_have_content:
+                    output_json_path = os.path.join(complete_output_folder, json_file_name)
+                else:
+                    output_json_path = os.path.join(incomplete_output_folder, json_file_name)
 
                 # Write the extracted sections to JSON
                 json_data = json.dumps(sections, indent=2)
@@ -125,10 +133,11 @@ def process_files_in_folder(xml_folder_path, output_folder_path, csv_path):
 
 
 # Example usage
-xml_folder_path = '../xml_results/papers4/'
-output_folder_path = '../json_results/papers4/'
+xml_folder_path = '../xml_results/'
+complete_output_folder = '../json_results/complete/'
+incomplete_output_folder = '../json_results/incomplete/'
 csv_path = '../paper_references.csv'
-process_files_in_folder(xml_folder_path, output_folder_path, csv_path)
+process_files_in_folder(xml_folder_path, complete_output_folder, incomplete_output_folder, csv_path)
 
 # Verificación de la existencia del archivo de log
 if os.path.exists(log_file_path):
