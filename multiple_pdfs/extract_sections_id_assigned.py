@@ -2,6 +2,8 @@ import xml.etree.ElementTree as ET
 import json
 import pandas as pd
 import glob
+import re
+import unicodedata
 import os
 import logging
 
@@ -10,6 +12,22 @@ log_file_path = 'process_errors.log'
 logging.basicConfig(filename=log_file_path, level=logging.ERROR,
                     format='%(asctime)s:%(levelname)s:%(message)s')
 
+
+def clean_text(text):
+    # Normalización Unicode para eliminar caracteres especiales
+    text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode('ascii')
+    
+    # Eliminar caracteres no imprimibles
+    text = re.sub(r'[^\x00-\x7F]+', ' ', text)  # Eliminar todos los caracteres no ASCII
+    
+    # Eliminar caracteres no deseados usando expresiones regulares
+    text = re.sub(r'[\u00b0\n\t\r]', ' ', text)  # Eliminar caracteres específicos
+    text = re.sub(r'[^A-Za-z0-9\s,.?!;:()\-\'\"]', '', text)  # Mantener solo caracteres alfanuméricos y puntuación básica
+    
+    # Reemplazar múltiples espacios por uno solo
+    text = re.sub(r'\s+', ' ', text).strip()
+    
+    return text
 
 def extract_sections_from_xml(file_path):
     # Load XML from a file
@@ -33,7 +51,7 @@ def extract_sections_from_xml(file_path):
         for elem in root.findall(path):
             text = ''.join(elem.itertext())
             if text:
-                content.append(text.strip())
+                content.append(clean_text(text.strip()))
         return " ".join(content)
 
     # Function to extract content according to keywords
@@ -49,7 +67,7 @@ def extract_sections_from_xml(file_path):
             if capture and elem.tag.endswith("p"):
                 text = ''.join(elem.itertext()).strip()
                 if text:
-                    content.append(text)
+                    content.append(clean_text(text))
         return " ".join(content)
 
     # Extraction of sections

@@ -6,6 +6,8 @@ from fuzzywuzzy import fuzz
 from fuzzywuzzy import process
 import glob
 import os
+import re
+import unicodedata
 import logging
 import fitz  # PyMuPDF
 import camelot
@@ -48,6 +50,23 @@ def process_fulltext_document(service, file):
         print(f"Exception during PDF processing: {e}")
     return None
 
+def clean_text(text):
+    # Normalización Unicode para eliminar caracteres especiales
+    text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode('ascii')
+    
+    # Eliminar caracteres no imprimibles
+    text = re.sub(r'[^\x00-\x7F]+', ' ', text)  # Eliminar todos los caracteres no ASCII
+    
+    # Eliminar caracteres no deseados usando expresiones regulares
+    text = re.sub(r'[\u00b0\n\t\r]', ' ', text)  # Eliminar caracteres específicos
+    text = re.sub(r'[^A-Za-z0-9\s,.?!;:()\-\'\"]', '', text)  # Mantener solo caracteres alfanuméricos y puntuación básica
+    
+    # Reemplazar múltiples espacios por uno solo
+    text = re.sub(r'\s+', ' ', text).strip()
+    
+    return text
+
+
 def extract_sections_from_xml(file_path):
     # Load XML from a file
     tree = ET.parse(file_path)
@@ -70,7 +89,7 @@ def extract_sections_from_xml(file_path):
         for elem in root.findall(path):
             text = ''.join(elem.itertext())
             if text:
-                content.append(text.strip())
+                content.append(clean_text(text.strip()))
         return " ".join(content)
 
     # Function to extract content according to keywords
@@ -86,7 +105,7 @@ def extract_sections_from_xml(file_path):
             if capture and elem.tag.endswith("p"):
                 text = ''.join(elem.itertext()).strip()
                 if text:
-                    content.append(text)
+                    content.append(clean_text(text))
         return " ".join(content)
 
     # Function to extract image descriptions
@@ -151,20 +170,34 @@ def extract_images_from_pdf(pdf_path, images_folder, image_descriptions):
 
             # Agregar descripción si está disponible
             if image_counter <= len(image_descriptions):
-                image_descriptions_dict[image_name] = image_descriptions[image_counter - 1]
+                image_descriptions_dict[image_name] = clean_text(image_descriptions[image_counter - 1])
 
             image_counter += 1
 
     return image_descriptions_dict
 
 def extract_tables_from_pdf(pdf_path, tables_folder, paper_id):
-    tables = camelot.read_pdf(pdf_path, pages='all')
-    if tables:
+    try:
+        # Extraer tablas del PDF
+        tables = camelot.read_pdf(pdf_path, pages='all')
+        
+        # Verificar si se encontraron tablas
+        if not tables:
+            error_message = f"No se encontraron tablas en el archivo: {pdf_path}"
+            print(error_message)
+            logging.error(error_message)
+            return
+        
+        # Guardar cada tabla como un archivo CSV
         for i, table in enumerate(tables):
-            table_path = os.path.join(tables_folder, f"table_{i + 1}.csv")
-            table.to_csv(table_path)
-    else:
-        logging.info(f"El documento {paper_id} no contiene tablas.")
+            table_file_path = os.path.join(tables_folder, f"table_{paper_id}_{i + 1}.csv")
+            table.to_csv(table_file_path)
+        
+        print(f"Tablas extraídas y guardadas para el paper {paper_id}.")
+    except Exception as e:
+        error_message = f"Error extrayendo tablas del archivo {pdf_path}: {str(e)}"
+        print(error_message)
+        logging.error(error_message)
 
 def process_paper(pdf_file_path, xml_file_path, output_base_folder, complete_output_folder, incomplete_output_folder, paper_id):
     try:
