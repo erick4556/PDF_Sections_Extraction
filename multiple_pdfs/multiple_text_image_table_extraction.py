@@ -11,6 +11,9 @@ import unicodedata
 import logging
 import fitz  # PyMuPDF
 import camelot
+import pdfplumber
+from tabula import read_pdf
+
 from os import path, makedirs, listdir
 
 # Configurar el registro (logging)
@@ -21,7 +24,7 @@ logging.basicConfig(filename=log_file_path, level=logging.ERROR,
 # GROBID client configuration
 client = GrobidClient(config_path="../settings/config.json")
 service_name = "processFulltextDocument"
-pdf_folder = "../documents/"
+pdf_folder = "../documents2/"
 output_base_folder = '../json_results/'
 complete_output_folder = '../json_results/complete/'
 incomplete_output_folder = '../json_results/incomplete/'
@@ -179,26 +182,26 @@ def extract_images_from_pdf(pdf_path, images_folder, image_descriptions):
 def extract_tables_from_pdf(pdf_path, tables_folder, paper_id):
     try:
         # Extraer tablas del PDF
-        tables = camelot.read_pdf(pdf_path, pages='all')
-        
+        tables = read_pdf(pdf_path, pages='all', multiple_tables=True)
+
         # Verificar si se encontraron tablas
         if not tables:
             error_message = f"No se encontraron tablas en el archivo: {pdf_path}"
             print(error_message)
             logging.error(error_message)
             return
-        
+
         # Guardar cada tabla como un archivo CSV
         for i, table in enumerate(tables):
             table_file_path = os.path.join(tables_folder, f"table_{paper_id}_{i + 1}.csv")
-            table.to_csv(table_file_path)
+            table.to_csv(table_file_path, index=False)
         
         print(f"Tablas extraídas y guardadas para el paper {paper_id}.")
     except Exception as e:
         error_message = f"Error extrayendo tablas del archivo {pdf_path}: {str(e)}"
         print(error_message)
         logging.error(error_message)
-
+        
 def process_paper(pdf_file_path, xml_file_path, output_base_folder, complete_output_folder, incomplete_output_folder, paper_id):
     try:
         # Extract sections using Grobid

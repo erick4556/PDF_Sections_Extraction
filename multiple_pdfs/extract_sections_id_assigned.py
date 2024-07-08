@@ -123,7 +123,7 @@ def process_files_in_folder(xml_folder_path, complete_output_folder, incomplete_
             matching_row = df[df['filename'] == filename]
 
             if not matching_row.empty:
-                paper_id = matching_row['ID'].values[0]
+                paper_id = matching_row['No_de_Ref'].values[0]
                 json_file_name = f'paper_{paper_id}.json'
 
                 # Check if all sections have content
