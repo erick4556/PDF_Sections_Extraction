@@ -22,7 +22,7 @@ def clean_text(text):
     
     # Eliminar caracteres no deseados usando expresiones regulares
     text = re.sub(r'[\u00b0\n\t\r]', ' ', text)  # Eliminar caracteres específicos
-    text = re.sub(r'[^A-Za-z0-9\s,.?!;:()\-\'\"]', '', text)  # Mantener solo caracteres alfanuméricos y puntuación básica
+    text = re.sub(r'[^A-Za-z0-9\s,.?!;:()\-\'\"/]', '', text)  # Mantener solo caracteres alfanuméricos y puntuación básica, incluyendo "/"
     
     # Reemplazar múltiples espacios por uno solo
     text = re.sub(r'\s+', ' ', text).strip()

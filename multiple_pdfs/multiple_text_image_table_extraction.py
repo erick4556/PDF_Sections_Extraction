@@ -24,7 +24,7 @@ logging.basicConfig(filename=log_file_path, level=logging.ERROR,
 # GROBID client configuration
 client = GrobidClient(config_path="../settings/config.json")
 service_name = "processFulltextDocument"
-pdf_folder = "../documents2/"
+pdf_folder = "../documents/"
 output_base_folder = '../json_results/'
 complete_output_folder = '../json_results/complete/'
 incomplete_output_folder = '../json_results/incomplete/'
@@ -62,7 +62,7 @@ def clean_text(text):
     
     # Eliminar caracteres no deseados usando expresiones regulares
     text = re.sub(r'[\u00b0\n\t\r]', ' ', text)  # Eliminar caracteres específicos
-    text = re.sub(r'[^A-Za-z0-9\s,.?!;:()\-\'\"]', '', text)  # Mantener solo caracteres alfanuméricos y puntuación básica
+    text = re.sub(r'[^A-Za-z0-9\s,.?!;:()\-\'\"/]', '', text)  # Mantener solo caracteres alfanuméricos y puntuación básica, incluyendo "/"
     
     # Reemplazar múltiples espacios por uno solo
     text = re.sub(r'\s+', ' ', text).strip()
@@ -267,7 +267,7 @@ def process_files_in_folder(pdf_folder_path, output_base_folder, complete_output
             matching_row = df[df['filename'] == filename]
 
             if not matching_row.empty:
-                paper_id = matching_row['ID'].values[0]
+                paper_id = matching_row['No_de_Ref'].values[0]
 
                 # Process the PDF with Grobid to get the XML
                 xml_response = process_fulltext_document(service_name, pdf_file_path)
