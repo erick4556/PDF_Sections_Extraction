@@ -24,7 +24,7 @@ logging.basicConfig(filename=log_file_path, level=logging.ERROR,
 # GROBID client configuration
 client = GrobidClient(config_path="../settings/config.json")
 service_name = "processFulltextDocument"
-pdf_folder = "../documents/"
+pdf_folder = "../documents2/"
 output_base_folder = '../json_results/'
 complete_output_folder = '../json_results/complete/'
 incomplete_output_folder = '../json_results/incomplete/'
@@ -179,6 +179,9 @@ def extract_images_from_pdf(pdf_path, images_folder, image_descriptions):
 
     return image_descriptions_dict
 
+# Table extraction
+
+# Using tabula library
 def extract_tables_from_pdf(pdf_path, tables_folder, paper_id):
     try:
         # Extraer tablas del PDF
@@ -195,13 +198,72 @@ def extract_tables_from_pdf(pdf_path, tables_folder, paper_id):
         for i, table in enumerate(tables):
             table_file_path = os.path.join(tables_folder, f"table_{paper_id}_{i + 1}.csv")
             table.to_csv(table_file_path, index=False)
-        
+
         print(f"Tablas extraídas y guardadas para el paper {paper_id}.")
     except Exception as e:
         error_message = f"Error extrayendo tablas del archivo {pdf_path}: {str(e)}"
         print(error_message)
         logging.error(error_message)
+
+
+# Using camelot library
+""" def extract_tables_from_pdf(pdf_path, tables_folder, paper_id):
+    try:
+        # Extraer tablas del PDF
+        tables = camelot.read_pdf(pdf_path, pages='all')
         
+        # Verificar si se encontraron tablas
+        if tables.n == 0:
+            error_message = f"No se encontraron tablas en el archivo: {pdf_path}"
+            print(error_message)
+            logging.error(error_message)
+            return
+        
+        # Guardar cada tabla como un archivo CSV
+        for i, table in enumerate(tables):
+            table_file_path = os.path.join(tables_folder, f"table_{paper_id}_{i + 1}.csv")
+            table.to_csv(table_file_path)
+        
+        print(f"Tablas extraídas y guardadas para el paper {paper_id}.")
+    except Exception as e:
+        error_message = f"Error extrayendo tablas del archivo {pdf_path}: {str(e)}"
+        print(error_message)
+        logging.error(error_message) """
+
+# Using pdfplumber library
+""" def extract_tables_from_pdf(pdf_path, tables_folder, paper_id):
+    try:
+        # Abrir el archivo PDF
+        with pdfplumber.open(pdf_path) as pdf:
+            table_count = 0
+            for page_number, page in enumerate(pdf.pages):
+                tables = page.extract_tables()
+                
+                # Verificar si se encontraron tablas
+                if not tables:
+                    continue
+                
+                # Guardar cada tabla como un archivo CSV
+                for table in tables:
+                    # Convertir la tabla en un DataFrame de pandas
+                    df = pd.DataFrame(table[1:], columns=table[0])
+                    table_count += 1
+                    table_file_path = os.path.join(tables_folder, f"table_{paper_id}_{table_count}.csv")
+                    df.to_csv(table_file_path, index=False)
+        
+        if table_count == 0:
+            error_message = f"No se encontraron tablas en el archivo: {pdf_path}"
+            print(error_message)
+            logging.error(error_message)
+        else:
+            print(f"Tablas extraídas y guardadas para el paper {paper_id}.")
+    except Exception as e:
+        error_message = f"Error extrayendo tablas del archivo {pdf_path}: {str(e)}"
+        print(error_message)
+        logging.error(error_message) """
+
+# ----------------------------------------------------------------
+
 def process_paper(pdf_file_path, xml_file_path, output_base_folder, complete_output_folder, incomplete_output_folder, paper_id):
     try:
         # Extract sections using Grobid

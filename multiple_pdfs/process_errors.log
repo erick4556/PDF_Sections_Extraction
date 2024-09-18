@@ -1,0 +1,4 @@
+2024-09-18 10:53:29,541:ERROR:Error extrayendo tablas del archivo ../documents2/10.1016_j.catcom.2005.01.011.pdf: Ghostscript is not installed. You can install it using the instructions here: https://camelot-py.readthedocs.io/en/master/user/install-deps.html
+2024-09-18 10:53:31,636:ERROR:Error extrayendo tablas del archivo ../documents2/10.1016@S0926-3373(02)00174-1.pdf: Ghostscript is not installed. You can install it using the instructions here: https://camelot-py.readthedocs.io/en/master/user/install-deps.html
+2024-09-18 11:04:46,418:ERROR:No se encontraron tablas en el archivo: ../documents2/10.1016_j.catcom.2005.01.011.pdf
+2024-09-18 11:04:48,695:ERROR:No se encontraron tablas en el archivo: ../documents2/10.1016@S0926-3373(02)00174-1.pdf
