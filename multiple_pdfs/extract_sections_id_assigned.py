@@ -152,8 +152,8 @@ def process_files_in_folder(xml_folder_path, complete_output_folder, incomplete_
 
 # Example usage
 xml_folder_path = '../xml_results/'
-complete_output_folder = '../json_results/complete/'
-incomplete_output_folder = '../json_results/incomplete/'
+complete_output_folder = '../json_results/completed/'
+incomplete_output_folder = '../json_results/incompleted/'
 csv_path = '../paper_references.csv'
 process_files_in_folder(xml_folder_path, complete_output_folder, incomplete_output_folder, csv_path)
 

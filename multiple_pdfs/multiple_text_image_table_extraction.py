@@ -26,8 +26,8 @@ client = GrobidClient(config_path="../settings/config.json")
 service_name = "processFulltextDocument"
 pdf_folder = "../documents2/"
 output_base_folder = '../json_results/'
-complete_output_folder = '../json_results/complete/'
-incomplete_output_folder = '../json_results/incomplete/'
+complete_output_folder = '../json_results/completed/'
+incomplete_output_folder = '../json_results/incompleted/'
 csv_path = '../paper_references.csv'
 
 # Crear carpetas de salida
@@ -335,7 +335,7 @@ def process_files_in_folder(pdf_folder_path, output_base_folder, complete_output
                 xml_response = process_fulltext_document(service_name, pdf_file_path)
 
                 if xml_response:
-                    xml_output_folder = "../xml_results2/"
+                    xml_output_folder = "../xml_test/"
                     if not path.exists(xml_output_folder):
                         makedirs(xml_output_folder)
 
