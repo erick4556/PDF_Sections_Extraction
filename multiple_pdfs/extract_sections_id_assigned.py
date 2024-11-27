@@ -108,13 +108,19 @@ def process_files_in_folder(xml_folder_path, complete_output_folder, incomplete_
     if not os.path.exists(incomplete_output_folder):
         os.makedirs(incomplete_output_folder)
 
-    # Get all XML files in the folder
+   # Get all XML files in the folder
     xml_files = glob.glob(os.path.join(xml_folder_path, '*.xml'))
 
     for xml_file_path in xml_files:
         try:
             # Extract sections and title
             sections, title = extract_sections_from_xml(xml_file_path)
+
+            # Agregar el título del artículo como la primera sección
+            sections.insert(0, {
+                "title": "Article Title",  # Título por defecto
+                "content": title  # Contenido del título del artículo
+            })
 
             # Get the filename from the xml_file_path
             filename = os.path.basename(xml_file_path)
@@ -134,10 +140,9 @@ def process_files_in_folder(xml_folder_path, complete_output_folder, incomplete_
                 else:
                     output_json_path = os.path.join(incomplete_output_folder, json_file_name)
 
-                # Write the extracted sections to JSON
-                json_data = json.dumps(sections, indent=2)
+               # Write the extracted sections to JSON
                 with open(output_json_path, 'w') as json_file:
-                    json_file.write(json_data)
+                    json.dump(sections, json_file, indent=2)
 
                 print(f"JSON guardado correctamente en {output_json_path}")
             else:
@@ -145,7 +150,7 @@ def process_files_in_folder(xml_folder_path, complete_output_folder, incomplete_
                 print(error_message)
                 logging.error(error_message)
         except Exception as e:
-            error_message = f"Error procesando el archivo {xml_file_path}, Título: {title}, Error: {str(e)}"
+            error_message = f"Error procesando el archivo {xml_file_path}, Error: {str(e)}"
             print(error_message)
             logging.error(error_message)
 
