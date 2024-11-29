@@ -46,7 +46,6 @@ def extract_sections_from_xml(file_path):
     # Function for extracting content under a specific tag, handles namespaces
     def extract_content_by_tag(tag_name):
         content = []
-        # Adjust the label name for the namespace if necessary.
         path = f".//{{{ns['tei']}}}{tag_name}" if ns else f".//{tag_name}"
         for elem in root.findall(path):
             text = ''.join(elem.itertext())
@@ -82,17 +81,17 @@ def extract_sections_from_xml(file_path):
         ["Conclusion", "Conclusions"], "Conclusion")
 
     sections = [
+        {"title": "Article_Title", "content": title},  # Add title as the first section
         {"title": "Abstract", "content": abstract_content},
         {"title": "Experimental", "content": experimental_content},
-        {"title": "Results and discussion", "content": results_discussion_content},
+        {"title": "Results_and_discussion", "content": results_discussion_content},
         {"title": "Conclusions", "content": conclusions_content},
     ]
 
     if supporting_information_content:
-        sections.append({"title": "Supporting Information",
-                        "content": supporting_information_content})
+        sections.append({"title": "Supporting_Information", "content": supporting_information_content})
 
-    return sections, title
+    return sections
 
 
 def process_files_in_folder(xml_folder_path, complete_output_folder, incomplete_output_folder, csv_path):
@@ -103,24 +102,16 @@ def process_files_in_folder(xml_folder_path, complete_output_folder, incomplete_
     df['filename'] = df['filename'].str.strip() + '.xml'
 
     # Ensure the output folders exist
-    if not os.path.exists(complete_output_folder):
-        os.makedirs(complete_output_folder)
-    if not os.path.exists(incomplete_output_folder):
-        os.makedirs(incomplete_output_folder)
+    os.makedirs(complete_output_folder, exist_ok=True)
+    os.makedirs(incomplete_output_folder, exist_ok=True)
 
-   # Get all XML files in the folder
+    # Get all XML files in the folder
     xml_files = glob.glob(os.path.join(xml_folder_path, '*.xml'))
 
     for xml_file_path in xml_files:
         try:
-            # Extract sections and title
-            sections, title = extract_sections_from_xml(xml_file_path)
-
-            # Agregar el título del artículo como la primera sección
-            sections.insert(0, {
-                "title": "Article Title",  # Título por defecto
-                "content": title  # Contenido del título del artículo
-            })
+            # Extract sections (title already included in extract_sections_from_xml)
+            sections = extract_sections_from_xml(xml_file_path)
 
             # Get the filename from the xml_file_path
             filename = os.path.basename(xml_file_path)
@@ -140,7 +131,7 @@ def process_files_in_folder(xml_folder_path, complete_output_folder, incomplete_
                 else:
                     output_json_path = os.path.join(incomplete_output_folder, json_file_name)
 
-               # Write the extracted sections to JSON
+                # Write the extracted sections to JSON
                 with open(output_json_path, 'w') as json_file:
                     json.dump(sections, json_file, indent=2)
 
