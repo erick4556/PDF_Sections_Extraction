@@ -68,6 +68,17 @@ def extract_sections_from_xml(file_path):
                 if text:
                     content.append(clean_text(text))
         return " ".join(content)
+    
+    # Function to extract the DOI
+    def extract_doi():
+        """Extrae el DOI del documento usando su etiqueta específica."""
+        doi_element = root.find(".//tei:idno[@type='DOI']", ns)
+        if doi_element is not None:
+            return clean_text(doi_element.text.strip())
+        return None
+
+    # Extraer el DOI
+    doi = extract_doi()
 
     # Extraction of sections
     abstract_content = extract_content_by_tag("abstract")
@@ -81,7 +92,8 @@ def extract_sections_from_xml(file_path):
         ["Conclusion", "Conclusions"], "Conclusion")
 
     sections = [
-        {"title": "Article_Title", "content": title},  # Add title as the first section
+        {"title": "Doi", "content": doi if doi else "Doi not found"},
+        {"title": "Article_Title", "content": title},
         {"title": "Abstract", "content": abstract_content},
         {"title": "Experimental", "content": experimental_content},
         {"title": "Results_and_discussion", "content": results_discussion_content},
