@@ -7,7 +7,7 @@ from os import path, makedirs, listdir
 client = GrobidClient(config_path="../settings/config.json")
 
 service_name = "processFulltextDocument"
-pdf_folder = "../documents/"
+pdf_folder = "../documents/Papers/"
 
 
 def process_fulltext_document(service, file):

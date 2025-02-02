@@ -1,6 +1,5 @@
 import xml.etree.ElementTree as ET
 import json
-import pandas as pd
 import glob
 import re
 import unicodedata
@@ -11,7 +10,6 @@ import logging
 log_file_path = 'process_errors.log'
 logging.basicConfig(filename=log_file_path, level=logging.ERROR,
                     format='%(asctime)s:%(levelname)s:%(message)s')
-
 
 def clean_text(text):
     # Normalización Unicode para eliminar caracteres especiales
@@ -30,20 +28,15 @@ def clean_text(text):
     return text
 
 def extract_sections_from_xml(file_path):
-    # Load XML from a file
     tree = ET.parse(file_path)
     root = tree.getroot()
-
-    # Namespace, if the XML uses namespaces
     ns = {'tei': 'http://www.tei-c.org/ns/1.0'}
 
-    # Extract title
     title = ''
     title_element = root.find(".//tei:title", ns)
     if title_element is not None:
         title = ''.join(title_element.itertext()).strip()
 
-    # Function for extracting content under a specific tag, handles namespaces
     def extract_content_by_tag(tag_name):
         content = []
         path = f".//{{{ns['tei']}}}{tag_name}" if ns else f".//{tag_name}"
@@ -53,7 +46,6 @@ def extract_sections_from_xml(file_path):
                 content.append(clean_text(text.strip()))
         return " ".join(content)
 
-    # Function to extract content according to keywords
     def extract_content_by_keywords(start_keywords, end_section):
         content = []
         capture = False
@@ -69,18 +61,13 @@ def extract_sections_from_xml(file_path):
                     content.append(clean_text(text))
         return " ".join(content)
     
-    # Function to extract the DOI
     def extract_doi():
-        """Extrae el DOI del documento usando su etiqueta específica."""
         doi_element = root.find(".//tei:idno[@type='DOI']", ns)
         if doi_element is not None:
             return clean_text(doi_element.text.strip())
         return None
 
-    # Extraer el DOI
     doi = extract_doi()
-
-    # Extraction of sections
     abstract_content = extract_content_by_tag("abstract")
     experimental_content = extract_content_by_keywords(
         ["Experimental", "Experimental studies", "Experiments", "Experimental methods", "Methods"], "Results and discussion")
@@ -105,67 +92,37 @@ def extract_sections_from_xml(file_path):
 
     return sections
 
-
-def process_files_in_folder(xml_folder_path, complete_output_folder, incomplete_output_folder, csv_path):
-    # Read the CSV file to get the mapping of titles to IDs
-    df = pd.read_csv(csv_path)
-
-    # Add .xml extension to filenames in the DataFrame
-    df['filename'] = df['filename'].str.strip() + '.xml'
-
-    # Ensure the output folders exist
+def process_files_in_folder(xml_folder_path, complete_output_folder, incomplete_output_folder):
     os.makedirs(complete_output_folder, exist_ok=True)
     os.makedirs(incomplete_output_folder, exist_ok=True)
-
-    # Get all XML files in the folder
     xml_files = glob.glob(os.path.join(xml_folder_path, '*.xml'))
 
-    for xml_file_path in xml_files:
+    for index, xml_file_path in enumerate(xml_files, start=1):
         try:
-            # Extract sections (title already included in extract_sections_from_xml)
             sections = extract_sections_from_xml(xml_file_path)
+            json_file_name = f'paper_{index}.json'
 
-            # Get the filename from the xml_file_path
-            filename = os.path.basename(xml_file_path)
+            all_sections_have_content = all(section['content'] for section in sections)
+            output_json_path = os.path.join(
+                complete_output_folder if all_sections_have_content else incomplete_output_folder,
+                json_file_name
+            )
+            
+            with open(output_json_path, 'w') as json_file:
+                json.dump(sections, json_file, indent=2)
 
-            # Find the matching row in the CSV file by filename
-            matching_row = df[df['filename'] == filename]
-
-            if not matching_row.empty:
-                paper_id = matching_row['No_de_Ref'].values[0]
-                json_file_name = f'paper_{paper_id}.json'
-
-                # Check if all sections have content
-                all_sections_have_content = all(section['content'] for section in sections)
-
-                if all_sections_have_content:
-                    output_json_path = os.path.join(complete_output_folder, json_file_name)
-                else:
-                    output_json_path = os.path.join(incomplete_output_folder, json_file_name)
-
-                # Write the extracted sections to JSON
-                with open(output_json_path, 'w') as json_file:
-                    json.dump(sections, json_file, indent=2)
-
-                print(f"JSON guardado correctamente en {output_json_path}")
-            else:
-                error_message = f"No se encontró una coincidencia para el archivo: {filename}"
-                print(error_message)
-                logging.error(error_message)
+            print(f"JSON guardado correctamente en {output_json_path}")
         except Exception as e:
             error_message = f"Error procesando el archivo {xml_file_path}, Error: {str(e)}"
             print(error_message)
             logging.error(error_message)
 
-
-# Example usage
+# Uso
 xml_folder_path = '../xml_results/'
 complete_output_folder = '../json_results/complete/'
 incomplete_output_folder = '../json_results/incomplete/'
-csv_path = '../paper_references.csv'
-process_files_in_folder(xml_folder_path, complete_output_folder, incomplete_output_folder, csv_path)
+process_files_in_folder(xml_folder_path, complete_output_folder, incomplete_output_folder)
 
-# Verificación de la existencia del archivo de log
 if os.path.exists(log_file_path):
     print(f"El archivo de log se ha creado correctamente: {log_file_path}")
 else:
